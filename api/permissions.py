@@ -1,5 +1,6 @@
 from rest_framework import permissions
-from .models import Lecture, Homework
+from .homework.models import Homework
+from .lecture.models import Lecture
 
 
 class ReadOnly(permissions.BasePermission):
@@ -13,9 +14,13 @@ class IsOwner(permissions.BasePermission):
         return obj.owner == request.user
 
 
+class IsUser(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.id == request.user.id
+
+
 class IsTeacher(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # course_id = obj.hometask.lecture.course_id
         course_id = obj.course_id
         return course_id in request.user.teacher.values_list('id', flat=True)
 
@@ -59,22 +64,3 @@ class POSTByOwnerOnly(permissions.BasePermission):
             return True
         homework_id = int(request.data['homework'])
         return homework_id in request.user.homeworks.values_list('id', flat=True)
-
-
-# class IsTeacherOrStudentReadOnly(permissions.BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         # print(f'{self=}', f'{request=}', f'{view=}', f'{obj=}', sep='\n')
-#         # print(f'{obj.__dict__=}')
-#         if getattr(obj, 'course_id', False):
-#             course_id = obj.course_id
-#         elif getattr(obj, 'lecture_id', False):
-#             course_id = obj.lecture.course_id
-#         else:
-#             course_id = None
-#         if request.method in permissions.SAFE_METHODS:
-#             for course in request.user.student.all():
-#                 if course.id == course_id:
-#                     return True
-#         for course in request.user.teacher.all():
-#             if course.id == course_id:
-#                 return True
