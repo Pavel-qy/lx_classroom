@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from . import serializers
@@ -24,8 +25,8 @@ class HomeworkDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         if (
-            self.request.parser_context['kwargs']['pk'] in
-            self.request.user.homeworks.values_list('id', flat=True)
+                self.request.parser_context['kwargs'].get('pk') in
+                self.request.user.homeworks.values_list('id', flat=True)
         ):
             return serializers.HomeworkStudentSerializer
         else:
