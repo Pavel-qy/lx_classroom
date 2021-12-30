@@ -11,9 +11,10 @@ SECRET_KEY = '...'
 * Django==4.0
 * djangorestframework==3.13.1
 * djangorestframework-simplejwt==5.0.0
-* drf-yasg==1.20.0
+* drf-spectacular==0.21.1
+* drf-spectacular-sidecar==2021.12.13
 * python-decouple==3.5
 ## Features
-* All aplication logic is available through the API.
+* All application logic is available through the API.
 * Implemented authentication using tokens.
-* Available documentation using 'Swagger-UI'.
+* Documentation in accordance with OpenAPI 3.0 available through 'Swagger-UI' and 'Redoc' interfaces.
