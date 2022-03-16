@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from . import serializers
 from .models import Course
 from .. import permissions
+from ..tasks import write_some_message
 
 
 class CourseList(generics.ListCreateAPIView):
@@ -10,8 +11,9 @@ class CourseList(generics.ListCreateAPIView):
     serializer_class = serializers.CourseSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    # def post(self, request, *args, **kwargs):
-    #     print(f'{request.data=}')
+    def get(self, request, *args, **kwargs):
+        write_some_message.delay("celery-worker.txt", request.data, args)
+        return self.list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

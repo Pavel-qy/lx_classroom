@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14.2-alpine
+    container_name: classroom-db
+    env_file:
+      - .env
+    volumes:
+      - db:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lx_classroom
+    container_name: classroom-app
+    env_file:
+      - .env
+    volumes:
+      - .:/home/somebody/lx-classroom/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    entrypoint: [ ]
+    command: /bin/bash -c "
+      ./wait-for db:5432 &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000"
+  # migration:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   image: lx_classroom
+  #   command: python manage.py migrate
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+  redis:
+    image: redis:latest
+    container_name: classroom-redis
+    volumes:
+      - redis:/data
+  celery-worker:
+    image: lx_classroom
+    container_name: classroom-worker
+    entrypoint: [ "celery" ]
+    command: [ "-A", "lx_classroom", "worker", "-l", "INFO" ]
+    env_file:
+      - .env
+    volumes:
+      - .:/home/somebody/lx-classroom/
+    depends_on:
+      - db
+      - redis
+  celery-beat:
+    image: lx_classroom
+    container_name: classroom-beat
+    entrypoint: [ "celery" ]
+    command: [ "-A", "lx_classroom", "beat", "-l", "INFO" ]
+    # command: [ "-A", "lx_classroom", "beat", "-l", "INFO", "-S", "django"]
+    env_file:
+      - .env
+    volumes:
+      - .:/home/somebody/lx-classroom/
+    depends_on:
+      - app
+      - redis
+      - celery-worker
+  flower:
+    image: lx_classroom
+    container_name: classroom-flower
+    entrypoint: [ "celery" ]
+    command: [ "-A", "lx_classroom", "flower" ]
+    volumes:
+      - .:/home/somebody/lx-classroom/
+    ports:
+      - "5555:5555"
+    depends_on:
+      - app
+
+volumes:
+  db:
+  redis:
