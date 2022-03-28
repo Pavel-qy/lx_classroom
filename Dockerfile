@@ -8,6 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # do not buffer output
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update
+
 # create a group and user to run app
 ARG APP_USER=somebody
 RUN groupadd -r ${APP_USER} && useradd --no-log-init --create-home -r -u 1000 -g ${APP_USER} ${APP_USER}
@@ -28,4 +30,4 @@ USER ${APP_USER}:${APP_USER}
 
 WORKDIR ${APP_DIR}
 
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
+CMD [ "gunicorn", "--bind", "0.0.0.0:8000", "lx_classroom.wsgi" ]

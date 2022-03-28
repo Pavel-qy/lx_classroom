@@ -4,3 +4,9 @@ __pycache__/
 db.sqlite3
 migrations/
 .idea/
+.*/
+static/
+celery-worker-prior.txt
+celery-worker.txt
+celerybeat-schedule
+registered-users-counter.txt

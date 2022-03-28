@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+# from ..tasks import write_some_message_task, write_some_message_task_prior
+from .. tasks import WriteSomeMessageTask, WriteSomeMessageTaskPrior
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -20,4 +23,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create(username=validated_data['username'])
         user.set_password(validated_data['password'])
         user.save()
+
+        # calling tasks without specifying a queue and priority
+        # write_some_message_task.apply_async(("Registered user data", validated_data))
+        # write_some_message_task_prior.apply_async(("Registered user data", validated_data), countdown=3)
+        
+        # calling tasks with specifying a queue and priority      
+        # write_some_message_task.apply_async(("Registered user data", validated_data), queue='users_registration', priority=9)
+        # write_some_message_task_prior.apply_async(("Registered user data", validated_data), queue='users_registration', priority=0)
+        
+        # calling class-based tasks
+        WriteSomeMessageTask.apply_async(("Registered user data", validated_data))
+        WriteSomeMessageTaskPrior.apply_async(("Registered user data", validated_data))
         return User

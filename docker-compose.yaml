@@ -26,7 +26,9 @@ services:
     command: /bin/bash -c "
       ./wait-for db:5432 &&
       python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000"
+      python manage.py collectstatic --no-input &&
+      gunicorn --bind 0.0.0.0:8000 lx_classroom.wsgi"
+      # python manage.py runserver 0.0.0.0:8000"
   # migration:
   #   build:
   #     context: .
@@ -44,11 +46,24 @@ services:
     container_name: classroom-redis
     volumes:
       - redis:/data
-  celery-worker:
+  celery-worker-tasks:
     image: lx_classroom
-    container_name: classroom-worker
+    container_name: classroom-worker-tasks
     entrypoint: [ "celery" ]
-    command: [ "-A", "lx_classroom", "worker", "-l", "INFO" ]
+    command: [ "-A", "lx_classroom", "worker", "-l", "INFO", "-Q", "users_registration", "--concurrency", "1" ]
+    env_file:
+      - .env
+    volumes:
+      - .:/home/somebody/lx-classroom/
+    depends_on:
+      - db
+      - redis
+      - redis:/data
+  celery-worker-periodic:
+    image: lx_classroom
+    container_name: classroom-worker-periodic
+    entrypoint: [ "celery" ]
+    command: [ "-A", "lx_classroom", "worker", "-l", "INFO", "-Q", "periodic_tasks", "--concurrency", "1" ]
     env_file:
       - .env
     volumes:
