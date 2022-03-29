@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:slim
+FROM python:3.10.2-slim
 
 # do not write pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
