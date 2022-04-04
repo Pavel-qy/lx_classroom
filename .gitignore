@@ -6,6 +6,7 @@ migrations/
 .idea/
 .*/
 static/
+media/
 celery-worker-prior.txt
 celery-worker.txt
 celerybeat-schedule

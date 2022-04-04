@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_celery_beat',
     'channels',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -149,10 +150,6 @@ SIMPLE_JWT = {
 }
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
 SPECTACULAR_SETTINGS = {
     'TITLE': 'LX Classroom API',
     'DESCRIPTION': 'Project for conducting online courses.',
@@ -201,3 +198,19 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+USE_S3 = config('USE_S3', default=False, cast=bool)
+
+if USE_S3:
+    # aws settings
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.eu-central-1.amazonaws.com'
+    # s3 public media settings
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
